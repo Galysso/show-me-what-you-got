@@ -1,26 +1,26 @@
 package io.github.apace100.smwyg;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import io.github.apace100.smwyg.mixin.HandledScreenFocusedSlotAccessor;
-import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
-import net.fabricmc.loader.api.Version;
-import net.fabricmc.loader.api.VersionParsingException;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.screen.slot.Slot;
 import org.lwjgl.glfw.GLFW;
-
-import java.util.Optional;
 
 public class ShowMeWhatYouGotClient implements ClientModInitializer {
 
@@ -53,12 +53,25 @@ public class ShowMeWhatYouGotClient implements ClientModInitializer {
     }
 
     public static void sendItemSharingMessage(int start, int end, ItemStack stack) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        NbtCompound nbt = new NbtCompound();
-        stack.writeNbt(nbt);
-        buf.writeVarInt(start);
-        buf.writeVarInt(end);
-        buf.writeNbt(nbt);
-        ClientPlayNetworking.send(ShowMeWhatYouGot.PACKET_ID, buf);
+        ClientPlayNetworking.send(new ItemSharingMessage(start, end, stack));
+    }
+
+    public static String stackToString(ItemStack stack) {
+        DataResult<NbtElement> encoding = ItemStack.CODEC.encodeStart(getOps(), stack);
+        return encoding.getOrThrow().toString();
+    }
+
+    public static ItemStack stackFromString(String itemStackString) {
+        try {
+            NbtCompound nbt = new StringNbtReader(new StringReader(itemStackString)).parseCompound();
+            DataResult<Pair<ItemStack, NbtElement>> decoding = ItemStack.CODEC.decode(getOps(), nbt);
+            return decoding.getOrThrow().getFirst();
+        } catch (CommandSyntaxException ignored) {
+        }
+        return ItemStack.EMPTY;
+    }
+
+    private static DynamicOps<NbtElement> getOps() {
+        return MinecraftClient.getInstance().world.getRegistryManager().getOps(NbtOps.INSTANCE);
     }
 }

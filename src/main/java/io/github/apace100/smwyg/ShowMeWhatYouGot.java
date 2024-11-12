@@ -1,16 +1,12 @@
 package io.github.apace100.smwyg;
 
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.message.v1.ServerMessageDecoratorEvent;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,8 +19,8 @@ public class ShowMeWhatYouGot implements ModInitializer {
 	public static final String MODID = "smwyg";
 	public static final Logger LOGGER = LogManager.getLogger(ShowMeWhatYouGot.class);
 
-	public static final Identifier PACKET_ID = new Identifier(MODID, "share_item");
-
+	// Add a 'true' value to an item stack's custom data NBT with this key to prevent
+	// SMWYG's custom tooltip component when sharing.
 	public static final String HIDE_STACK_NBT = MODID + ":hide_stack";
 
 	public static final MessageItemList MESSAGE_ITEM_LIST = new MessageItemList();
@@ -40,19 +36,18 @@ public class ShowMeWhatYouGot implements ModInitializer {
 			return decorateMessage(message, itemMatch.get());
 		}));
 
-		ServerPlayNetworking.registerGlobalReceiver(PACKET_ID, ((minecraftServer, serverPlayerEntity, serverPlayNetworkHandler, packetByteBuf, packetSender) -> {
-			int start = packetByteBuf.readVarInt();
-			int end = packetByteBuf.readVarInt();
-			NbtCompound nbt = packetByteBuf.readNbt();
-			ItemStack stack = ItemStack.fromNbt(nbt);
-			minecraftServer.execute(() -> {
-				SmwygItemMatch itemMatch = new SmwygItemMatch();
-				itemMatch.stack = stack;
-				itemMatch.start = start;
-				itemMatch.end = end;
-				MESSAGE_ITEM_LIST.add(serverPlayerEntity, itemMatch);
-			});
-		}));
+		PayloadTypeRegistry.playC2S().register(ItemSharingMessage.PACKET_ID, ItemSharingMessage.PACKET_CODEC);
+
+		ServerPlayNetworking.registerGlobalReceiver(ItemSharingMessage.PACKET_ID, (payload, context) -> {
+			int start = payload.start();
+			int end = payload.end();
+			ItemStack stack = payload.itemStack();
+			SmwygItemMatch itemMatch = new SmwygItemMatch();
+			itemMatch.stack = stack;
+			itemMatch.start = start;
+			itemMatch.end = end;
+			MESSAGE_ITEM_LIST.add(context.player(), itemMatch);
+		});
 	}
 
 	private static final Pattern ITEM_REGEX = Pattern.compile("\\[\\[smwyg:(?<item>.*)\\]\\]");
@@ -73,11 +68,7 @@ public class ShowMeWhatYouGot implements ModInitializer {
 		SmwygItemMatch itemMatch = new SmwygItemMatch();
 		itemMatch.start = start;
 		itemMatch.end = end;
-		try {
-			NbtCompound nbt = new StringNbtReader(new StringReader(itemNbt)).parseCompound();
-			itemMatch.stack = ItemStack.fromNbt(nbt);
-		} catch (CommandSyntaxException ignored) {
-		}
+		itemMatch.stack = ShowMeWhatYouGotClient.stackFromString(itemNbt);
 		return itemMatch;
 	}
 

@@ -4,8 +4,6 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.tooltip.TooltipComponent;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.item.ItemRenderer;
-import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix4f;
 
 import java.util.List;
@@ -15,22 +13,30 @@ public class HorizontalLayoutTooltipComponent implements TooltipComponent {
     private final List<TooltipComponent> components;
     private final int gap;
 
-    private final int height;
+    private int height;
+    private boolean heightDirty = true;
 
     public HorizontalLayoutTooltipComponent(List<TooltipComponent> components, int gap) {
         this.components = components;
         this.gap = gap;
+    }
+
+    private void calculateHeight(TextRenderer textRenderer) {
         int h = 0;
         for(TooltipComponent tc : components) {
-            if(tc.getHeight() > h) {
-                h = tc.getHeight();
+            if(tc.getHeight(textRenderer) > h) {
+                h = tc.getHeight(textRenderer);
             }
         }
         height = h;
     }
 
     @Override
-    public int getHeight() {
+    public int getHeight(TextRenderer textRenderer) {
+        if(heightDirty) {
+            calculateHeight(textRenderer);
+            heightDirty = false;
+        }
         return height;
     }
 
@@ -44,8 +50,8 @@ public class HorizontalLayoutTooltipComponent implements TooltipComponent {
         return sumOfWidths;
     }
 
-    private int getComponentY(TooltipComponent component) {
-        int height = component.getHeight();
+    private int getComponentY(TooltipComponent component, TextRenderer textRenderer) {
+        int height = component.getHeight(textRenderer);
         return (this.height - height) / 2;
     }
 
@@ -53,16 +59,16 @@ public class HorizontalLayoutTooltipComponent implements TooltipComponent {
     public void drawText(TextRenderer textRenderer, int x, int y, Matrix4f matrix, VertexConsumerProvider.Immediate vertexConsumers) {
         int currentX = x;
         for(TooltipComponent tc : components) {
-            tc.drawText(textRenderer, currentX, y + getComponentY(tc), matrix, vertexConsumers);
+            tc.drawText(textRenderer, currentX, y + getComponentY(tc, textRenderer), matrix, vertexConsumers);
             currentX += tc.getWidth(textRenderer) + gap;
         }
     }
 
     @Override
-    public void drawItems(TextRenderer textRenderer, int x, int y, DrawContext context) {
+    public void drawItems(TextRenderer textRenderer, int x, int y, int width, int height, DrawContext context) {
         int currentX = x;
         for(TooltipComponent tc : components) {
-            tc.drawItems(textRenderer, currentX, y + getComponentY(tc), context);
+            tc.drawItems(textRenderer, currentX, y + getComponentY(tc, textRenderer), width, height, context);
             currentX += tc.getWidth(textRenderer) + gap;
         }
     }

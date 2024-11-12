@@ -6,7 +6,6 @@ import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -23,8 +22,6 @@ public abstract class ChatScreenMixin extends Screen {
     protected ChatScreenMixin(Text title) {
         super(title);
     }
-
-    @Shadow public abstract boolean sendMessage(String chatText, boolean addToHistory);
 
     @Inject(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/widget/TextFieldWidget;setText(Ljava/lang/String;)V"))
     private void setItemSharingText(CallbackInfo ci) {
@@ -52,11 +49,17 @@ public abstract class ChatScreenMixin extends Screen {
             String before = istfw.getTextBefore();
             ItemStack stack = istfw.getStack();
             String after = istfw.getTextAfter();
-            NbtCompound nbt = new NbtCompound();
-            stack.writeNbt(nbt);
-            String stackString = "[[smwyg:" + nbt + "]]";
+
+            // Add SMWYG message to chat message history
+            if(addToHistory) {
+                String stackString = "[[smwyg:" + ShowMeWhatYouGotClient.stackToString(stack) + "]]";
+                this.client.inGameHud.getChatHud().addToMessageHistory(before + stackString + after);
+            }
+
+            // Inform server about shared item
             ShowMeWhatYouGotClient.sendItemSharingMessage(istfw.getInsertionStart(), istfw.getInsertionEnd(), stack);
-            this.client.inGameHud.getChatHud().addToMessageHistory(before + stackString + after);
+
+            // Prevent vanilla from adding message to chat message history
             return false;
         }
         return addToHistory;
