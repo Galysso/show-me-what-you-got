@@ -19,18 +19,19 @@ public class ItemStackTooltipComponent implements TooltipComponent {
     }
 
     @Override
-    public int getHeight(TextRenderer textRenderer) {
+    public int getHeight() {
         return 18;
     }
 
     @Override
-    public void drawItems(TextRenderer textRenderer, int x, int y, int width, int height, DrawContext drawContext) {
+    public void drawItems(TextRenderer textRenderer, int x, int y, DrawContext drawContext) {
         drawContext.drawItem(stack, x, y);
         int count = stack.getCount();
         String countLabel = "";
         if(count > 1) {
             countLabel = String.valueOf(stack.getCount());
         }
-        drawContext.drawStackOverlay(textRenderer, stack, x, y, countLabel);
+        //drawContext.drawStackOverlay(textRenderer, stack, x, y, countLabel);
+        drawContext.drawItemInSlot(textRenderer, stack, x, y, countLabel);
     }
 }

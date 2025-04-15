@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.8-SNAPSHOT'
+	id 'fabric-loom' version '1.9.1'
 	id 'maven-publish'
 }
 
@@ -11,7 +11,10 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
+	maven 	{ url = "https://cursemaven.com" }
 	maven { url 'https://jitpack.io' }
+	maven   { url = "https://maven.terraformersmc.com/" }
+	maven   { url = "https://maven.shedaniel.me/" }
 }
 
 dependencies {
@@ -23,6 +26,23 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	// Lootbeams
+	modImplementation "curse.maven:loot-beams-up-1161712:6313537"
+
+	// Cloth config
+	modApi("me.shedaniel.cloth:cloth-config-fabric:15.0.140") {
+		exclude(group: "net.fabricmc.fabric-api")
+	}
+
+	// Legendary Tooltips
+	modImplementation "curse.maven:legendary-tooltips-fabric-542478:6400658"
+
+	// Iceberg
+	modImplementation "curse.maven:iceberg-fabric-539382:6379428"
+
+	// Prism
+	modImplementation "curse.maven:prism-fabric-665526:6372978"
 }
 
 processResources {

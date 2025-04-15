@@ -34,7 +34,7 @@ public abstract class TextFieldWidgetMixin implements ItemSharingTextFieldWidget
     private int insertedIndex = 0;
 
     @Override
-    public void setStack(ItemStack stack) {
+    public void show_me_what_you_got$setStack(ItemStack stack) {
         this.itemStack = stack;
         Text text = stack.toHoverableText();
         this.insertedString = text.getString();
@@ -42,27 +42,27 @@ public abstract class TextFieldWidgetMixin implements ItemSharingTextFieldWidget
     }
 
     @Override
-    public ItemStack getStack() {
+    public ItemStack show_me_what_you_got$getStack() {
         return this.itemStack;
     }
 
     @Override
-    public String getTextBefore() {
+    public String show_me_what_you_got$getTextBefore() {
         return this.text.substring(0, insertedIndex);
     }
 
     @Override
-    public String getTextAfter() {
+    public String show_me_what_you_got$getTextAfter() {
         return this.text.substring(insertedIndex + insertedLength);
     }
 
     @Override
-    public boolean hasStack() {
+    public boolean show_me_what_you_got$hasStack() {
         return this.itemStack != null;
     }
 
     @Override
-    public void onSuggestionInserted(int start, int offset) {
+    public void show_me_what_you_got$onSuggestionInserted(int start, int offset) {
         if(this.itemStack != null && start <= insertedIndex) {
             this.insertedIndex += offset;
         }
@@ -93,7 +93,7 @@ public abstract class TextFieldWidgetMixin implements ItemSharingTextFieldWidget
             } else {
                 this.selectionEnd -= insertedLength;
             }
-            reset();
+            show_me_what_you_got$reset();
         }
     }
 
@@ -129,7 +129,7 @@ public abstract class TextFieldWidgetMixin implements ItemSharingTextFieldWidget
     @Inject(method = "eraseCharactersTo", at = @At(value = "INVOKE", target = "Ljava/lang/StringBuilder;<init>(Ljava/lang/String;)V"), locals = LocalCapture.CAPTURE_FAILHARD)
     private void smwyg$eraseInsertion(int characterOffset, CallbackInfo ci, int i, int j) {
         if(i <= insertedIndex && j >= insertedIndex + insertedLength) {
-            reset();
+            show_me_what_you_got$reset();
         } else {
             if(i <= insertedIndex || j <= insertedIndex) {
                 this.insertedIndex -= (j - i);
@@ -148,32 +148,36 @@ public abstract class TextFieldWidgetMixin implements ItemSharingTextFieldWidget
 
     @ModifyVariable(method = "setText", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private String smwyg$handleItemSetting(String text) {
-        if(hasStack()) {
+        if(show_me_what_you_got$hasStack()) {
             return text;
         }
         if(ShowMeWhatYouGot.hasSmwygItem(text)) {
             SmwygItemMatch itemMatch = ShowMeWhatYouGot.extractItem(text);
-            String before = text.substring(0, itemMatch.start);
-            String after = text.substring(itemMatch.end);
-            if(itemMatch.stack == null) {
-                text = before + I18n.translate("smwyg.chat.stale_link") + after;
-                reset();
+            if (itemMatch == null) {
+                show_me_what_you_got$reset();
             } else {
-                String itemText = itemMatch.stack.toHoverableText().getString();
-                text = before + itemText + after;
-                itemStack = itemMatch.stack;
-                insertedString = itemText;
-                insertedIndex = itemMatch.start;
-                insertedLength = itemText.length();
+                String before = text.substring(0, itemMatch.start);
+                String after = text.substring(itemMatch.end);
+                if (itemMatch.stack == null) {
+                    text = before + I18n.translate("smwyg.chat.stale_link") + after;
+                    show_me_what_you_got$reset();
+                } else {
+                    String itemText = itemMatch.stack.toHoverableText().getString();
+                    text = before + itemText + after;
+                    itemStack = itemMatch.stack;
+                    insertedString = itemText;
+                    insertedIndex = itemMatch.start;
+                    insertedLength = itemText.length();
+                }
             }
         } else {
-            reset();
+            show_me_what_you_got$reset();
         }
         return text;
     }
 
     @Override
-    public void reset() {
+    public void show_me_what_you_got$reset() {
         itemStack = null;
         insertedString = "";
         insertedIndex = 0;
@@ -181,12 +185,12 @@ public abstract class TextFieldWidgetMixin implements ItemSharingTextFieldWidget
     }
 
     @Override
-    public int getInsertionStart() {
+    public int show_me_what_you_got$getInsertionStart() {
         return insertedIndex;
     }
 
     @Override
-    public int getInsertionEnd() {
+    public int show_me_what_you_got$getInsertionEnd() {
         return insertedIndex + insertedLength;
     }
 }

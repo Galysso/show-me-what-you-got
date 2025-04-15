@@ -27,7 +27,7 @@ public abstract class ChatScreenMixin extends Screen {
     private void setItemSharingText(CallbackInfo ci) {
         if(ShowMeWhatYouGotClient.sharingItem != null) {
             if(this.chatField instanceof ItemSharingTextFieldWidget istfw) {
-                istfw.setStack(ShowMeWhatYouGotClient.sharingItem);
+                istfw.show_me_what_you_got$setStack(ShowMeWhatYouGotClient.sharingItem);
                 ShowMeWhatYouGotClient.sharingItem = null;
             }
         }
@@ -36,19 +36,19 @@ public abstract class ChatScreenMixin extends Screen {
     @Inject(method = "setChatFromHistory", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/widget/TextFieldWidget;setText(Ljava/lang/String;)V"))
     private void removeSetItem(int offset, CallbackInfo ci) {
         if(this.chatField instanceof ItemSharingTextFieldWidget istfw) {
-            istfw.reset();
+            istfw.show_me_what_you_got$reset();
         }
     }
 
     @ModifyVariable(method = "sendMessage", at = @At("HEAD"), argsOnly = true)
     private boolean smwyg$sendItemSharingMessage(boolean addToHistory) {
         if(this.chatField instanceof ItemSharingTextFieldWidget istfw) {
-            if(!istfw.hasStack()) {
+            if(!istfw.show_me_what_you_got$hasStack()) {
                 return addToHistory;
             }
-            String before = istfw.getTextBefore();
-            ItemStack stack = istfw.getStack();
-            String after = istfw.getTextAfter();
+            String before = istfw.show_me_what_you_got$getTextBefore();
+            ItemStack stack = istfw.show_me_what_you_got$getStack();
+            String after = istfw.show_me_what_you_got$getTextAfter();
 
             // Add SMWYG message to chat message history
             if(addToHistory) {
@@ -57,7 +57,7 @@ public abstract class ChatScreenMixin extends Screen {
             }
 
             // Inform server about shared item
-            ShowMeWhatYouGotClient.sendItemSharingMessage(istfw.getInsertionStart(), istfw.getInsertionEnd(), stack);
+            ShowMeWhatYouGotClient.sendItemSharingMessage(istfw.show_me_what_you_got$getInsertionStart(), istfw.show_me_what_you_got$getInsertionEnd(), stack);
 
             // Prevent vanilla from adding message to chat message history
             return false;

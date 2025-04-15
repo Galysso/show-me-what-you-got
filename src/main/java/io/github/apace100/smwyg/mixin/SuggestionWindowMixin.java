@@ -31,7 +31,7 @@ public class SuggestionWindowMixin {
                 int start = suggestion.getRange().getStart();
                 int end = suggestion.getRange().getEnd();
                 int offset = suggestion.getText().length() - (end - start);
-                istfw.onSuggestionInserted(start, offset);
+                istfw.show_me_what_you_got$onSuggestionInserted(start, offset);
             }
         }
     }

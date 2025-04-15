@@ -10,8 +10,11 @@
     "ChatScreenMixin",
     "DrawContextMixin",
     "HandledScreenFocusedSlotAccessor",
+    "IcebergCompatMixin",
     "SuggestionWindowMixin",
-    "TextFieldWidgetMixin"
+    "TextFieldWidgetMixin",
+    "TooltipManagerMixin",
+    "TooltipsMixin"
   ],
   "injectors": {
     "defaultRequire": 1
