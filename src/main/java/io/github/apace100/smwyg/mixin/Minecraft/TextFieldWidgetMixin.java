@@ -3,6 +3,7 @@ package io.github.apace100.smwyg.mixin.Minecraft;
 import io.github.apace100.smwyg.ShowMeWhatYouGot;
 import io.github.apace100.smwyg.SmwygItemMatch;
 import io.github.apace100.smwyg.duck.ItemSharingTextFieldWidget;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.item.ItemStack;
@@ -24,6 +25,9 @@ public abstract class TextFieldWidgetMixin implements ItemSharingTextFieldWidget
 
     @Shadow private int selectionStart;
     @Shadow private int selectionEnd;
+
+    @Shadow public abstract String getText();
+
     @Unique
     private ItemStack itemStack;
     @Unique

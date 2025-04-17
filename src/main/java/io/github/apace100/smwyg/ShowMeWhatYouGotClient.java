@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ChatScreen;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.item.ItemStack;
@@ -40,9 +41,14 @@ public class ShowMeWhatYouGotClient implements ClientModInitializer {
                 if(isCtrlPressed && isChatPressed && !sharedStack) {
                     sharedStack = true;
                     if (client.player.currentScreenHandler.getCursorStack().isEmpty() && focusedSlot != null && focusedSlot.hasStack()) {
-                        // Open chat with sharing item
+                        Screen currentScreen = client.currentScreen;
                         sharingItem = focusedSlot.getStack();
-                        client.setScreen(new ChatScreen(focusedSlot.getStack().toHoverableText().getString()));
+                        AutoChatScreen chatScreen = new AutoChatScreen(focusedSlot.getStack().toHoverableText().getString());
+                        client.setScreen(chatScreen);
+                        if (!Screen.hasAltDown()) {
+                            chatScreen.sendMessage(chatScreen.getChatField().getText(), true);
+                            client.setScreen(currentScreen);
+                        }
                     }
                 }
                 if(sharedStack && (!isCtrlPressed || !isChatPressed)) {
