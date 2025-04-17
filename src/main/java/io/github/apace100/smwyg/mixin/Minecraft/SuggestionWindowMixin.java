@@ -1,4 +1,4 @@
-package io.github.apace100.smwyg.mixin;
+package io.github.apace100.smwyg.mixin.Minecraft;
 
 import com.mojang.brigadier.suggestion.Suggestion;
 import io.github.apace100.smwyg.duck.ItemSharingTextFieldWidget;

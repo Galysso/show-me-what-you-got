@@ -1,4 +1,4 @@
-package io.github.apace100.smwyg.mixin;
+package io.github.apace100.smwyg.mixin.Minecraft;
 
 import io.github.apace100.smwyg.ShowMeWhatYouGot;
 import io.github.apace100.smwyg.SmwygItemMatch;

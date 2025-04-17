@@ -1,4 +1,4 @@
-package io.github.apace100.smwyg.mixin;
+package io.github.apace100.smwyg.mixin.Minecraft;
 
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.widget.TextFieldWidget;

@@ -1,4 +1,4 @@
-package io.github.apace100.smwyg.mixin;
+package io.github.apace100.smwyg.mixin.LootBeams;
 
 import com.lootbeams.compat.iceberg.IcebergCompat;
 import net.minecraft.client.font.TextRenderer;

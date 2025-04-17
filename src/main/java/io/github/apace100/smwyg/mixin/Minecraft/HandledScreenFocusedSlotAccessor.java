@@ -1,4 +1,4 @@
-package io.github.apace100.smwyg.mixin;
+package io.github.apace100.smwyg.mixin.Minecraft;
 
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.screen.slot.Slot;

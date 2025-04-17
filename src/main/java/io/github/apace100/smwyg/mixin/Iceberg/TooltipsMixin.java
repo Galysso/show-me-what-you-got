@@ -1,4 +1,4 @@
-package io.github.apace100.smwyg.mixin;
+package io.github.apace100.smwyg.mixin.Iceberg;
 
 import com.anthonyhilyard.iceberg.component.TitleBreakComponent;
 import com.anthonyhilyard.iceberg.util.Tooltips;

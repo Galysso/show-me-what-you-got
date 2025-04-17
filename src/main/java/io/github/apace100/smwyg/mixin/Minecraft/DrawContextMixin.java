@@ -1,5 +1,7 @@
-package io.github.apace100.smwyg.mixin;
+package io.github.apace100.smwyg.mixin.Minecraft;
 
+import com.anthonyhilyard.iceberg.component.IExtendedText;
+import com.anthonyhilyard.iceberg.component.TitleBreakComponent;
 import io.github.apace100.smwyg.ShowMeWhatYouGot;
 import io.github.apace100.smwyg.tooltip.HorizontalLayoutTooltipComponent;
 import io.github.apace100.smwyg.tooltip.ItemStackTooltipComponent;
@@ -15,6 +17,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -24,7 +27,6 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import javax.tools.Tool;
 import java.util.List;
 
 @Mixin(value = DrawContext.class)
@@ -33,6 +35,7 @@ public class DrawContextMixin {
 
     @Unique
     private ItemStack smwyg$hoveredStack;
+    private TextRenderer capturedTextRenderer;
 
     @Inject(method = "drawHoverEvent", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawItemTooltip(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;II)V"), locals = LocalCapture.CAPTURE_FAILHARD)
     private void smwyg$cacheHoveredStack(TextRenderer textRenderer, Style style, int x, int y, CallbackInfo ci, HoverEvent hoverEvent, HoverEvent.ItemStackContent itemStackContent) {
@@ -68,6 +71,11 @@ public class DrawContextMixin {
         //smwyg$hoveredStack = null;
     }*/
 
+    @Inject(method = "drawTooltip(Lnet/minecraft/client/font/TextRenderer;Ljava/util/List;IILnet/minecraft/client/gui/tooltip/TooltipPositioner;)V", at = @At("HEAD"))
+    private void captureTextRenderer(TextRenderer textRenderer, List<TooltipComponent> components, int x, int y, TooltipPositioner positioner, CallbackInfo ci) {
+        this.capturedTextRenderer = textRenderer;
+    }
+
     @ModifyVariable(
         method = "drawTooltip(Lnet/minecraft/client/font/TextRenderer;Ljava/util/List;IILnet/minecraft/client/gui/tooltip/TooltipPositioner;)V",
         at = @At("HEAD"),
@@ -77,11 +85,33 @@ public class DrawContextMixin {
         if (smwyg$hoveredStack == null || smwyg$hoveredStack.isEmpty() || components.isEmpty() || smwyg$hoveredStack.isIn(renderIn3dTag)) {
             return components;
         }
+
         TooltipComponent first = components.get(0);
         TooltipComponent stackComponent = new ItemStackTooltipComponent(smwyg$hoveredStack);
-        TooltipComponent combined;
-        combined = new HorizontalLayoutTooltipComponent(List.of(stackComponent, first), 3);
+        if (first instanceof IExtendedText extendedText) {
+            extendedText.setAlignment(IExtendedText.TextAlignment.CENTER);
+            extendedText.setPadding(-3, stackComponent.getWidth(this.capturedTextRenderer) + 3);
+        }
+        TooltipComponent combined = new HorizontalLayoutTooltipComponent(List.of(stackComponent, first), 3);
         components.set(0, combined);
+
+        // Add padding to the second component
+        if (components.size() > 2) {
+            if (components.get(1) instanceof TitleBreakComponent) {
+                TooltipComponent second = components.get(2);
+                if (second instanceof IExtendedText extendedText) {
+                    extendedText.setPadding(0, 0, 2, 0);
+                    components.set(2, second);
+                    components.add(1, new TitleBreakComponent());
+                }
+            }
+        }
+
+        // Remove separator if not necessary
+        if (components.size() == 2 && components.get(1) instanceof TitleBreakComponent) {
+            components.remove(1);
+        }
+
         smwyg$hoveredStack = null;
         return components;
     }

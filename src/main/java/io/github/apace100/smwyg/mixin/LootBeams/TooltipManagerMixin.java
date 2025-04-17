@@ -1,7 +1,5 @@
-package io.github.apace100.smwyg.mixin;
+package io.github.apace100.smwyg.mixin.LootBeams;
 
-import com.lootbeams.config.Configuration;
-import com.lootbeams.features.CustomLootBeamsConfig;
 import com.lootbeams.managers.TooltipManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ChatScreen;

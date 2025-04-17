@@ -1,4 +1,4 @@
-package io.github.apace100.smwyg.mixin;
+package io.github.apace100.smwyg.mixin.Minecraft;
 
 import io.github.apace100.smwyg.ShowMeWhatYouGotClient;
 import io.github.apace100.smwyg.duck.ItemSharingTextFieldWidget;
